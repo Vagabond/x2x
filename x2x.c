@@ -983,8 +983,10 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 				}
 				/* sanity check motion: necessary for nondeterminism surrounding warps */
 				deltaX = pDpyInfo->lastFromX - fromX;
-				if (deltaX < 0) deltaX = -deltaX;
-				if (deltaX > pDpyInfo->unreasonableDelta) return False;
+				if (deltaX < 0)
+					deltaX = -deltaX;
+				if (deltaX > pDpyInfo->unreasonableDelta)
+					return False;
 		} else if ((doEdge == EDGE_NORTH) || (doEdge == EDGE_SOUTH)) {
 				if (!(pEv->same_screen)) {
 						toY = (pDpyInfo->lastFromY < fromY) ? COORD_DECR : COORD_INCR;
@@ -993,8 +995,10 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 				}
 				/* sanity check motion: necessary for nondeterminism surrounding warps */
 				deltaY = pDpyInfo->lastFromY - fromY;
-				if (deltaY < 0) deltaY = -deltaY;
-				if (deltaY > pDpyInfo->unreasonableDelta) return False;
+				if (deltaY < 0)
+					deltaY = -deltaY;
+				if (deltaY > pDpyInfo->unreasonableDelta)
+					return False;
 		}
 
 		if (SPECIAL_COORD(toX) != 0) { /* special coordinate */
