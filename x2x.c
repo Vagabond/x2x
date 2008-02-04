@@ -243,7 +243,7 @@ static Bool    doBtnBlock   = False;
 /**********
  * main
  **********/
-int main(int argc, char**  argv)
+int main(int argc, char **argv)
 {
   Display *fromDpy;
   PSHADOW pShadow;
@@ -500,9 +500,7 @@ static Bool CheckTestExtension(Display* dpy)
 #define X2X_CONNECTED       2
 #define X2X_CONN_RELEASE    3
 
-static void DoX2X(fromDpy, toDpy)
-Display *fromDpy;
-Display *toDpy;
+static void DoX2X(Display* fromDpy, Display* toDpy)
 {
   DPYINFO   dpyInfo;
   int       nfds;
@@ -523,7 +521,7 @@ Display *toDpy;
   toConn   = XConnectionNumber(toDpy);
 
   while (True) { /* FOREVER */
-    if (fromPending = XPending(fromDpy))
+    if ((fromPending = XPending(fromDpy)))
       if (ProcessEvent(fromDpy, &dpyInfo)) /* done! */
 	break;
 
@@ -543,8 +541,7 @@ Display *toDpy;
 
 } /* END DoX2X() */
 
-static void InitDpyInfo(pDpyInfo)
-PDPYINFO pDpyInfo;
+static void InitDpyInfo(PDPYINFO pDpyInfo)
 {
   Display   *fromDpy, *toDpy;
   Screen    *fromScreen, *toScreen;
@@ -562,7 +559,7 @@ PDPYINFO pDpyInfo;
   unsigned int width, height; /* window width, height */
   int       geomMask;		/* mask returned by parse */
   int       gravMask;
-  int       gravity;
+  int       gravity = NorthWestGravity;
   int       xret, yret, wret, hret, bret, dret;
   XSetWindowAttributes xswa;
   XSizeHints *xsh;
@@ -824,7 +821,7 @@ PDPYINFO pDpyInfo;
   pDpyInfo->eventMask = eventMask; /* save for future munging */
   if (doSel) XSetSelectionOwner(fromDpy, XA_PRIMARY, trigger, CurrentTime);
   XMapRaised(fromDpy, trigger);
-  if (pDpyInfo->font = font) { /* paint text */
+  if ((pDpyInfo->font = font)) { /* paint text */
     /* position text */
     pDpyInfo->twidth = twidth;
     pDpyInfo->theight = theight;
@@ -840,8 +837,7 @@ PDPYINFO pDpyInfo;
 
 } /* END InitDpyInfo */
 
-static void DoConnect(pDpyInfo)
-PDPYINFO pDpyInfo;
+static void DoConnect(PDPYINFO pDpyInfo)
 {
   Display *fromDpy = pDpyInfo->fromDpy;
   Window  trigger = pDpyInfo->trigger;
@@ -862,8 +858,7 @@ PDPYINFO pDpyInfo;
   XFlush(fromDpy);
 } /* END DoConnect */
 
-static void DoDisconnect(pDpyInfo)
-PDPYINFO pDpyInfo;
+static void DoDisconnect(PDPYINFO pDpyInfo)
 {
   Display *fromDpy = pDpyInfo->fromDpy;
   PDPYXTRA pDpyXtra;
@@ -891,8 +886,7 @@ PDPYINFO pDpyInfo;
     FakeThingsUp(pDpyInfo);
 } /* END DoDisconnect */
 
-static void RegisterEventHandlers(pDpyInfo)
-PDPYINFO pDpyInfo;
+static void RegisterEventHandlers(PDPYINFO pDpyInfo)
 {
   Display *fromDpy = pDpyInfo->fromDpy;
   Window  trigger = pDpyInfo->trigger;
@@ -935,9 +929,7 @@ PDPYINFO pDpyInfo;
 
 } /* END RegisterEventHandlers */
 
-static Bool ProcessEvent(dpy, pDpyInfo)
-Display  *dpy;
-PDPYINFO pDpyInfo;
+static Bool ProcessEvent(Display *dpy, PDPYINFO pDpyInfo)
 {
   XEvent    ev;
   XAnyEvent *pEv = (XAnyEvent *)&ev;
@@ -962,11 +954,10 @@ PDPYINFO pDpyInfo;
 
 } /* END ProcessEvent */
 
-static Bool ProcessMotionNotify(unused, pDpyInfo, pEv)
-Display  *unused;
-PDPYINFO pDpyInfo;
-XMotionEvent *pEv; /* caution: might be pseudo-event!!! */
+static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent *pEv)
 {
+	/* XXX: caution! pEv might be pseudo-event!!! */
+
   /* Note: ProcessMotionNotify is sometimes called from inside x2x to
    *       simulate a motion event.  Any new references to pEv fields
    *       must be checked carefully!
@@ -1060,10 +1051,7 @@ XMotionEvent *pEv; /* caution: might be pseudo-event!!! */
 
 } /* END ProcessMotionNotify */
 
-static Bool ProcessExpose(dpy, pDpyInfo, pEv)
-Display  *dpy;
-PDPYINFO pDpyInfo;
-XExposeEvent *pEv;
+static Bool ProcessExpose(Display *dpy, PDPYINFO pDpyInfo, XExposeEvent *pEv)
 {
   XClearWindow(pDpyInfo->fromDpy, pDpyInfo->trigger);
   if (pDpyInfo->font)
@@ -1074,10 +1062,7 @@ XExposeEvent *pEv;
   
 } /* END ProcessExpose */
 
-static Bool ProcessEnterNotify(dpy, pDpyInfo, pEv)
-Display  *dpy;
-PDPYINFO pDpyInfo;
-XCrossingEvent *pEv;
+static Bool ProcessEnterNotify(Display *dpy, PDPYINFO pDpyInfo, XCrossingEvent *pEv)
 {
   Display *fromDpy = pDpyInfo->fromDpy;
   XMotionEvent xmev;
@@ -1096,10 +1081,7 @@ XCrossingEvent *pEv;
   
 } /* END ProcessEnterNotify */
 
-static Bool ProcessButtonPress(dpy, pDpyInfo, pEv)
-Display  *dpy;
-PDPYINFO pDpyInfo;
-XButtonEvent *pEv;
+static Bool ProcessButtonPress(Display *dpy, PDPYINFO pDpyInfo, XButtonEvent *pEv)
 {
   int state;
   PSHADOW   pShadow;
@@ -1150,10 +1132,7 @@ XButtonEvent *pEv;
   return False;
 } /* END ProcessButtonPress */
 
-static Bool ProcessButtonRelease(dpy, pDpyInfo, pEv)
-Display  *dpy;
-PDPYINFO pDpyInfo;
-XButtonEvent *pEv;
+static Bool ProcessButtonRelease(Display *dpy, PDPYINFO pDpyInfo, XButtonEvent *pEv)
 {
   int state;
   PSHADOW   pShadow;
@@ -1162,7 +1141,8 @@ XButtonEvent *pEv;
 
   if ((pDpyInfo->mode == X2X_CONNECTED) || 
       (pDpyInfo->mode == X2X_CONN_RELEASE)) {
-    if (pEv->button <= N_BUTTONS) toButton = pDpyInfo->inverseMap[pEv->button];
+    if (pEv->button <= N_BUTTONS)
+			toButton = pDpyInfo->inverseMap[pEv->button];
     for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
       XTestFakeButtonEvent(pShadow->dpy, toButton, False, 0);
 #ifdef DEBUG
@@ -1207,10 +1187,7 @@ XButtonEvent *pEv;
 
 } /* END ProcessButtonRelease */
 
-static Bool ProcessKeyEvent(dpy, pDpyInfo, pEv)
-Display  *dpy;
-PDPYINFO pDpyInfo;
-XKeyEvent *pEv;
+static Bool ProcessKeyEvent(Display *dpy, PDPYINFO pDpyInfo, XKeyEvent *pEv)
 {
   KeyCode   keycode;
   KeySym    keysym;
@@ -1227,7 +1204,7 @@ XKeyEvent *pEv;
 
   if (pSticky) {
     for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
-      if (keycode = XKeysymToKeycode(pShadow->dpy, keysym)) {
+      if ((keycode = XKeysymToKeycode(pShadow->dpy, keysym))) {
 	XTestFakeKeyEvent(pShadow->dpy, keycode, True, 0);
 	XTestFakeKeyEvent(pShadow->dpy, keycode, False, 0);
 	XFlush(pShadow->dpy);
@@ -1235,7 +1212,7 @@ XKeyEvent *pEv;
     } /* END for */
   } else {
     for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
-      if (keycode = XKeysymToKeycode(pShadow->dpy, keysym)) {
+      if ((keycode = XKeysymToKeycode(pShadow->dpy, keysym))) {
 	XTestFakeKeyEvent(pShadow->dpy, keycode, bPress, 0);
 	XFlush(pShadow->dpy);
       } /* END if */
@@ -1248,10 +1225,7 @@ XKeyEvent *pEv;
 
 } /* END ProcessKeyEvent */ 
 
-static Bool ProcessConfigureNotify(dpy, pDpyInfo, pEv)
-Display  *dpy;
-PDPYINFO pDpyInfo;
-XConfigureEvent *pEv;
+static Bool ProcessConfigureNotify(Display *dpy, PDPYINFO pDpyInfo, XConfigureEvent *pEv)
 {
   if (pDpyInfo->font) {
     /* reposition text */
@@ -1264,10 +1238,7 @@ XConfigureEvent *pEv;
 
 } /* END ProcessConfigureNotify */
 
-static Bool ProcessClientMessage(dpy, pDpyInfo, pEv)
-Display  *dpy;
-PDPYINFO pDpyInfo;
-XClientMessageEvent *pEv;
+static Bool ProcessClientMessage(Display *dpy, PDPYINFO pDpyInfo, XClientMessageEvent *pEv)
 {
   /* terminate if atoms match! */
   return ((pEv->message_type == pDpyInfo->wmpAtom) &&
@@ -1275,10 +1246,7 @@ XClientMessageEvent *pEv;
 
 } /* END ProcessClientMessage */
 
-static Bool ProcessSelectionRequest(dpy, pDpyInfo, pEv)
-Display *dpy;
-PDPYINFO pDpyInfo;
-XSelectionRequestEvent *pEv;
+static Bool ProcessSelectionRequest(Display *dpy, PDPYINFO pDpyInfo, XSelectionRequestEvent *pEv)
 {
   PDPYXTRA pDpyXtra = GETDPYXTRA(dpy, pDpyInfo);
   Display *otherDpy;
@@ -1309,9 +1277,7 @@ XSelectionRequestEvent *pEv;
 
 } /* END ProcessSelectionRequest */
 
-static void SendPing(dpy, pDpyXtra)
-Display *dpy;
-PDPYXTRA pDpyXtra;
+static void SendPing(Display *dpy, PDPYXTRA pDpyXtra)
 {
   if (!(pDpyXtra->pingInProg)) {
     XChangeProperty(dpy, pDpyXtra->propWin, pDpyXtra->pingAtom, XA_PRIMARY,
@@ -1320,10 +1286,7 @@ PDPYXTRA pDpyXtra;
   } /* END if */
 } /* END SendPing */
 
-static Bool ProcessPropertyNotify(dpy, pDpyInfo, pEv)
-Display *dpy;
-PDPYINFO pDpyInfo;
-XPropertyEvent *pEv;
+static Bool ProcessPropertyNotify(Display *dpy, PDPYINFO pDpyInfo, XPropertyEvent *pEv)
 {
   XSelectionRequestEvent *pSelReq;
   PDPYXTRA pDpyXtra = GETDPYXTRA(dpy, pDpyInfo);
@@ -1352,10 +1315,7 @@ XPropertyEvent *pEv;
 
 } /* END ProcessPropertyNotify */
 
-static Bool ProcessSelectionNotify(dpy, pDpyInfo, pEv)
-Display *dpy;
-PDPYINFO pDpyInfo;
-XSelectionEvent *pEv;
+static Bool ProcessSelectionNotify(Display *dpy, PDPYINFO pDpyInfo, XSelectionEvent *pEv)
 {
   Atom type;
   int  format;
@@ -1412,8 +1372,7 @@ XSelectionEvent *pEv;
 
 } /* END ProcessSelectionNotify */
 
-static void SendSelectionNotify(pSelReq)
-XSelectionRequestEvent *pSelReq;
+static void SendSelectionNotify(XSelectionRequestEvent *pSelReq)
 {
   XSelectionEvent sendEv;
 
@@ -1429,10 +1388,7 @@ XSelectionRequestEvent *pSelReq;
   
 } /* END SendSelectionNotify */
 
-static Bool ProcessSelectionClear(dpy, pDpyInfo, pEv)
-Display *dpy;
-PDPYINFO pDpyInfo;
-XSelectionClearEvent *pEv;
+static Bool ProcessSelectionClear(Display *dpy, PDPYINFO pDpyInfo, XSelectionClearEvent *pEv)
 {
   Display  *otherDpy;
   PDPYXTRA pDpyXtra, pOtherXtra;
@@ -1462,10 +1418,7 @@ XSelectionClearEvent *pEv;
 /**********
  * process a visibility event
  **********/
-static Bool ProcessVisibility(dpy, pDpyInfo, pEv)
-Display          *dpy;
-PDPYINFO         pDpyInfo;
-XVisibilityEvent *pEv;
+static Bool ProcessVisibility(Display *dpy, PDPYINFO pDpyInfo, XVisibilityEvent *pEv)
 {
   /* might want to qualify, based on other messages.  otherwise,
      this code might cause a loop if two windows decide to fight
@@ -1533,8 +1486,7 @@ static void FakeAction(PDPYINFO pDpyInfo, int type, unsigned int thing, Bool bDo
 
 } /* END FakeAction */
 
-static void FakeThingsUp(pDpyInfo)
-PDPYINFO pDpyInfo;
+static void FakeThingsUp(PDPYINFO pDpyInfo)
 {
   PFAKE pFake, pNext;
   PSHADOW pShadow;
@@ -1575,9 +1527,7 @@ PDPYINFO pDpyInfo;
 
 } /* END FakeThingsUp */
 
-static void RefreshPointerMapping(dpy, pDpyInfo)
-Display             *dpy;
-PDPYINFO            pDpyInfo;
+static void RefreshPointerMapping(Display *dpy, PDPYINFO pDpyInfo)
 {
   unsigned int buttCtr;
   unsigned char buttonMap[N_BUTTONS];
