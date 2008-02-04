@@ -1099,7 +1099,14 @@ static Bool ProcessButtonPress(Display *dpy, PDPYINFO pDpyInfo, XButtonEvent *pE
 #endif
 						break;
 				case X2X_CONNECTED:
-						if (pEv->button <= N_BUTTONS) toButton = pDpyInfo->inverseMap[pEv->button];
+						if (pEv->button <= N_BUTTONS) {
+							toButton = pDpyInfo->inverseMap[pEv->button];
+						} else {
+							/* TODO: actually handle this */
+								printf("Unknown button %d pressed!\n", pEv->button);
+								return False;
+						}
+
 						for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
 								XTestFakeButtonEvent(pShadow->dpy, toButton, True, 0);
 #ifdef DEBUG
@@ -1145,8 +1152,14 @@ static Bool ProcessButtonRelease(Display *dpy, PDPYINFO pDpyInfo, XButtonEvent *
 
 		if ((pDpyInfo->mode == X2X_CONNECTED) || 
 						(pDpyInfo->mode == X2X_CONN_RELEASE)) {
-				if (pEv->button <= N_BUTTONS)
-						toButton = pDpyInfo->inverseMap[pEv->button];
+				if (pEv->button <= N_BUTTONS) {
+					toButton = pDpyInfo->inverseMap[pEv->button];
+				} else {
+					/* TODO: actually handle this */
+					printf("Unknown button %d released!\n", pEv->button);
+					return False;
+				}
+
 				for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
 						XTestFakeButtonEvent(pShadow->dpy, toButton, False, 0);
 #ifdef DEBUG
@@ -1158,7 +1171,9 @@ static Bool ProcessButtonRelease(Display *dpy, PDPYINFO pDpyInfo, XButtonEvent *
 						FakeAction(pDpyInfo, FAKE_BUTTON, toButton, False);
 		} /* END if */
 
-		if (doEdge) return False;
+		if (doEdge) {
+			return False;
+		}
 		if ((pDpyInfo->mode == X2X_AWAIT_RELEASE) || 
 						(pDpyInfo->mode == X2X_CONN_RELEASE)) {
 				/* make sure that all buttons are released */
@@ -1221,8 +1236,9 @@ static Bool ProcessKeyEvent(Display *dpy, PDPYINFO pDpyInfo, XKeyEvent *pEv)
 								XFlush(pShadow->dpy);
 						} /* END if */
 				} /* END for */
-				if (doAutoUp)
+				if (doAutoUp) {
 						FakeAction(pDpyInfo, FAKE_KEY, keysym, bPress);
+				}
 		}
 
 		return False;
@@ -1503,7 +1519,7 @@ static void FakeThingsUp(PDPYINFO pDpyInfo)
 						/* send up to all shadows */
 						for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
 								if (type == FAKE_KEY) { /* key goes up */
-										if (keycode = XKeysymToKeycode(pShadow->dpy, pFake->thing)) {
+										if ((keycode = XKeysymToKeycode(pShadow->dpy, pFake->thing))) {
 												XTestFakeKeyEvent(pShadow->dpy, keycode, False, 0);
 #ifdef DEBUG
 												printf("key 0x%x up\n", pFake->thing);
