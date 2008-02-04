@@ -263,8 +263,7 @@ int main(int argc, char **argv)
 		/* convert to real name: */
 		while ((fromDpy = XOpenDisplay(fromDpyName)) == NULL) {
 				if (!waitDpy) {
-						fprintf(stderr, "%s - error: can not open display %s\n", 
-										programStr, fromDpyName);
+						fprintf(stderr, "%s - error: can not open display %s\n", programStr, fromDpyName);
 						exit(2);
 				} /* END if */
 				sleep(10);
@@ -560,7 +559,8 @@ static void InitDpyInfo(PDPYINFO pDpyInfo)
 		int       geomMask;		/* mask returned by parse */
 		int       gravMask;
 		int       gravity = NorthWestGravity;
-		int       xret, yret, wret, hret, bret, dret;
+		int       xret, yret;
+		unsigned int wret, hret, bret, dret;
 		XSetWindowAttributes xswa;
 		XSizeHints *xsh;
 		int       eventMask;
@@ -685,9 +685,8 @@ static void InitDpyInfo(PDPYINFO pDpyInfo)
 						default:                      gravity = NorthWestGravity; break;
 				}
 				if (gravMask) {
-						XGetGeometry(fromDpy, root, 
-										&rret, &xret, &yret, &wret, &hret, &bret, &dret);
-						if ((geomMask & (XValue | XNegative)) == (XValue | XNegative)){
+						XGetGeometry(fromDpy, root, &rret, &xret, &yret, &wret, &hret, &bret, &dret);
+						if ((geomMask & (XValue | XNegative)) == (XValue | XNegative)) {
 								xoff = wret - width + xoff;
 						}
 						if ((geomMask & (YValue | YNegative)) == (YValue | YNegative)) {
@@ -939,14 +938,13 @@ static Bool ProcessEvent(Display *dpy, PDPYINFO pDpyInfo)
 
 		XNextEvent(dpy, &ev);
 		handler = 0;
-		if ((!XFINDCONTEXT(dpy, pEv->window, pEv->type, &handler)) ||
-						(!XFINDCONTEXT(dpy, None, pEv->type, &handler))) {
+		if ((!XFINDCONTEXT(dpy, pEv->window, pEv->type, &handler)) || 
+			(!XFINDCONTEXT(dpy, None, pEv->type, &handler))) {
 				/* have handler */
 				return ((*handler)(dpy, pDpyInfo, &ev));
 		} else {
 #ifdef DEBUG
-				printf("no handler for window 0x%x, event type %d\n", 
-								pEv->window, pEv->type);
+				printf("no handler for window 0x%x, event type %d\n", (unsigned int)pEv->window, pEv->type);
 #endif
 		} /* END if/else */
 
@@ -1308,7 +1306,6 @@ static void SendPing(Display *dpy, PDPYXTRA pDpyXtra)
 
 static Bool ProcessPropertyNotify(Display *dpy, PDPYINFO pDpyInfo, XPropertyEvent *pEv)
 {
-		XSelectionRequestEvent *pSelReq;
 		PDPYXTRA pDpyXtra = GETDPYXTRA(dpy, pDpyInfo);
 
 #ifdef DEBUG
