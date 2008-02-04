@@ -41,12 +41,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/XTest.h>
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <X11/Xatom.h> /* for selection */
 #include <sys/types.h> /* for select */
 #include <sys/time.h> /* for select */
+#include <unistd.h> /* for sleep() */
 #include "format.h"
 
 /*#define DEBUG*/
@@ -236,9 +238,7 @@ static Bool    doBtnBlock   = False;
 /**********
  * main
  **********/
-main(argc, argv)
-int  argc;
-char **argv;
+int main(int argc, char**  argv)
 {
   Display *fromDpy;
   PSHADOW pShadow;
@@ -288,8 +288,7 @@ char **argv;
   
 } /* END main */
 
-static Display *OpenAndCheckDisplay(name)
-char *name;
+static Display *OpenAndCheckDisplay(char* name)
 {
   Display *openDpy;
 
@@ -472,8 +471,7 @@ static void Usage()
 /**********
  * call the library to check for the test extension
  **********/
-static Bool CheckTestExtension(dpy)
-Display  *dpy;
+static Bool CheckTestExtension(Display* dpy)
 {
   int eventb, errorb;
   int vmajor, vminor;
@@ -1454,10 +1452,7 @@ XMappingEvent       *pEv;
 
 } /* END ProcessMapping */
 
-static void FakeAction(pDpyInfo, type, thing, bDown)
-PDPYINFO pDpyInfo;
-unsigned int thing;
-Bool bDown;
+static void FakeAction(PDPYINFO pDpyInfo, int type, unsigned int thing, Bool bDown)
 {
   PFAKE *ppFake;
   PFAKE pFake;
