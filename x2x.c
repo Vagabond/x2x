@@ -986,9 +986,60 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 				/* sanity check motion: necessary for nondeterminism surrounding warps */
 				deltaX = pDpyInfo->lastFromX - fromX;
 				if (deltaX < 0)
-					deltaX = -deltaX;
+						deltaX = -deltaX;
 				if (deltaX > pDpyInfo->unreasonableDelta)
-					return False;
+						return False;
+
+				if (SPECIAL_COORD(toX) != 0) { /* special coordinate */
+						bAbortedDisconnect = False;
+						if (toX == COORD_INCR) {
+								if (toScreenNum != (pDpyInfo->nScreens - 1)) { /* next screen */
+										toScreenNum = ++(pDpyInfo->toScreen);
+										fromX = pDpyInfo->fromXIncr;
+										toX = pDpyInfo->xTables[toScreenNum][fromX];
+								} else { /* disconnect! */
+										if (doBtnBlock &&
+														(pEv->state & (Button1Mask | Button2Mask | Button3Mask |
+																	   Button4Mask | Button5Mask)))
+												bAbortedDisconnect = True;
+										else {
+												DoDisconnect(pDpyInfo);
+												fromX = pDpyInfo->fromXDisc;
+										}
+										toX = pDpyInfo->xTables[toScreenNum][pDpyInfo->fromXConn];
+								}
+						} else { /* DECR */
+								if (toScreenNum != 0) { /* previous screen */
+										toScreenNum = --(pDpyInfo->toScreen);
+										fromX = pDpyInfo->fromXDecr;
+										toX = pDpyInfo->xTables[toScreenNum][fromX];
+								} else { /* disconnect! */
+										if (doBtnBlock &&
+														(pEv->state & (Button1Mask | Button2Mask | Button3Mask |
+																	   Button4Mask | Button5Mask)))
+												bAbortedDisconnect = True;
+										else {
+												DoDisconnect(pDpyInfo);
+												fromX = pDpyInfo->fromXDisc;
+										}
+										toX = pDpyInfo->xTables[toScreenNum][pDpyInfo->fromXConn];
+								}
+						} /* END if toX */
+						if (!bAbortedDisconnect) {
+								fromDpy = pDpyInfo->fromDpy;
+								XWarpPointer(fromDpy, None, pDpyInfo->root, 0, 0, 0, 0, 
+												fromX, pEv->y_root);
+								XFlush(fromDpy);
+						}
+				} /* END if SPECIAL_COORD */
+				pDpyInfo->lastFromX = fromX;
+
+				for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
+						XTestFakeMotionEvent(pShadow->dpy, toScreenNum, toX,
+										pDpyInfo->yTables[toScreenNum][pEv->y_root], 0);
+						XFlush(pShadow->dpy);
+				} /* END for */
+
 		} else if ((doEdge == EDGE_NORTH) || (doEdge == EDGE_SOUTH)) {
 				if (!(pEv->same_screen)) {
 						toY = (pDpyInfo->lastFromY < fromY) ? COORD_DECR : COORD_INCR;
@@ -998,60 +1049,60 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 				/* sanity check motion: necessary for nondeterminism surrounding warps */
 				deltaY = pDpyInfo->lastFromY - fromY;
 				if (deltaY < 0)
-					deltaY = -deltaY;
+						deltaY = -deltaY;
 				if (deltaY > pDpyInfo->unreasonableDelta)
-					return False;
+						return False;
+
+				if (SPECIAL_COORD(toY) != 0) { /* special coordinate */
+						bAbortedDisconnect = False;
+						if (toY == COORD_INCR) {
+								if (toScreenNum != (pDpyInfo->nScreens - 1)) { /* next screen */
+										toScreenNum = ++(pDpyInfo->toScreen);
+										fromY = pDpyInfo->fromYIncr;
+										toY = pDpyInfo->xTables[toScreenNum][fromY];
+								} else { /* disconnect! */
+										if (doBtnBlock &&
+														(pEv->state & (Button1Mask | Button2Mask | Button3Mask |
+																	   Button4Mask | Button5Mask)))
+												bAbortedDisconnect = True;
+										else {
+												DoDisconnect(pDpyInfo);
+												fromY = pDpyInfo->fromYDisc;
+										}
+										toY = pDpyInfo->xTables[toScreenNum][pDpyInfo->fromYConn];
+								}
+						} else { /* DECR */
+								if (toScreenNum != 0) { /* previous screen */
+										toScreenNum = --(pDpyInfo->toScreen);
+										fromY = pDpyInfo->fromYDecr;
+										toY = pDpyInfo->xTables[toScreenNum][fromY];
+								} else { /* disconnect! */
+										if (doBtnBlock &&
+														(pEv->state & (Button1Mask | Button2Mask | Button3Mask |
+																	   Button4Mask | Button5Mask)))
+												bAbortedDisconnect = True;
+										else {
+												DoDisconnect(pDpyInfo);
+												fromY = pDpyInfo->fromYDisc;
+										}
+										toY = pDpyInfo->xTables[toScreenNum][pDpyInfo->fromYConn];
+								}
+						} /* END if toY */
+						if (!bAbortedDisconnect) {
+								fromDpy = pDpyInfo->fromDpy;
+								XWarpPointer(fromDpy, None, pDpyInfo->root, 0, 0, 0, 0, 
+												fromX, pEv->y_root);
+								XFlush(fromDpy);
+						}
+				} /* END if SPECIAL_COORD */
+				pDpyInfo->lastFromY = fromY;
+
+				for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
+						XTestFakeMotionEvent(pShadow->dpy, toScreenNum, toY,
+										pDpyInfo->yTables[toScreenNum][pEv->y_root], 0);
+						XFlush(pShadow->dpy);
+				} /* END for */
 		}
-
-		if (SPECIAL_COORD(toX) != 0) { /* special coordinate */
-				bAbortedDisconnect = False;
-				if (toX == COORD_INCR) {
-						if (toScreenNum != (pDpyInfo->nScreens - 1)) { /* next screen */
-								toScreenNum = ++(pDpyInfo->toScreen);
-								fromX = pDpyInfo->fromXIncr;
-								toX = pDpyInfo->xTables[toScreenNum][fromX];
-						} else { /* disconnect! */
-								if (doBtnBlock &&
-												(pEv->state & (Button1Mask | Button2Mask | Button3Mask |
-															   Button4Mask | Button5Mask)))
-										bAbortedDisconnect = True;
-								else {
-										DoDisconnect(pDpyInfo);
-										fromX = pDpyInfo->fromXDisc;
-								}
-								toX = pDpyInfo->xTables[toScreenNum][pDpyInfo->fromXConn];
-						}
-				} else { /* DECR */
-						if (toScreenNum != 0) { /* previous screen */
-								toScreenNum = --(pDpyInfo->toScreen);
-								fromX = pDpyInfo->fromXDecr;
-								toX = pDpyInfo->xTables[toScreenNum][fromX];
-						} else { /* disconnect! */
-								if (doBtnBlock &&
-												(pEv->state & (Button1Mask | Button2Mask | Button3Mask |
-															   Button4Mask | Button5Mask)))
-										bAbortedDisconnect = True;
-								else {
-										DoDisconnect(pDpyInfo);
-										fromX = pDpyInfo->fromXDisc;
-								}
-								toX = pDpyInfo->xTables[toScreenNum][pDpyInfo->fromXConn];
-						}
-				} /* END if toX */
-				if (!bAbortedDisconnect) {
-						fromDpy = pDpyInfo->fromDpy;
-						XWarpPointer(fromDpy, None, pDpyInfo->root, 0, 0, 0, 0, 
-										fromX, pEv->y_root);
-						XFlush(fromDpy);
-				}
-		} /* END if SPECIAL_COORD */
-		pDpyInfo->lastFromX = fromX;
-
-		for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
-				XTestFakeMotionEvent(pShadow->dpy, toScreenNum, toX,
-								pDpyInfo->yTables[toScreenNum][pEv->y_root], 0);
-				XFlush(pShadow->dpy);
-		} /* END for */
 
 		return False;
 
@@ -1102,9 +1153,9 @@ static Bool ProcessButtonPress(Display *dpy, PDPYINFO pDpyInfo, XButtonEvent *pE
 						break;
 				case X2X_CONNECTED:
 						if (pEv->button <= N_BUTTONS) {
-							toButton = pDpyInfo->inverseMap[pEv->button];
+								toButton = pDpyInfo->inverseMap[pEv->button];
 						} else {
-							/* TODO: actually handle this */
+								/* TODO: actually handle this */
 								printf("Unknown button %d pressed!\n", pEv->button);
 								return False;
 						}
@@ -1155,11 +1206,11 @@ static Bool ProcessButtonRelease(Display *dpy, PDPYINFO pDpyInfo, XButtonEvent *
 		if ((pDpyInfo->mode == X2X_CONNECTED) || 
 						(pDpyInfo->mode == X2X_CONN_RELEASE)) {
 				if (pEv->button <= N_BUTTONS) {
-					toButton = pDpyInfo->inverseMap[pEv->button];
+						toButton = pDpyInfo->inverseMap[pEv->button];
 				} else {
-					/* TODO: actually handle this */
-					printf("Unknown button %d released!\n", pEv->button);
-					return False;
+						/* TODO: actually handle this */
+						printf("Unknown button %d released!\n", pEv->button);
+						return False;
 				}
 
 				for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
@@ -1174,7 +1225,7 @@ static Bool ProcessButtonRelease(Display *dpy, PDPYINFO pDpyInfo, XButtonEvent *
 		} /* END if */
 
 		if (doEdge) {
-			return False;
+				return False;
 		}
 		if ((pDpyInfo->mode == X2X_AWAIT_RELEASE) || 
 						(pDpyInfo->mode == X2X_CONN_RELEASE)) {
