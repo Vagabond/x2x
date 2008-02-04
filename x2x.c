@@ -548,7 +548,8 @@ static void InitDpyInfo(PDPYINFO pDpyInfo)
 		int       fromHeight, fromWidth, toHeight, toWidth;
 		Pixmap    nullPixmap;
 		XColor    dummyColor;
-		Window    root, trigger, big, rret, toRoot, propWin;
+		Window    root, big, rret, toRoot, propWin;
+		Window    trigger = (Window) 0;
 		short     *xTable, *yTable; /* short: what about dimensions > 2^15? */
 		int       *heights, *widths;
 		int       counter;
@@ -568,7 +569,7 @@ static void InitDpyInfo(PDPYINFO pDpyInfo)
 		char      *windowName;  
 		XFS       *font;
 		PSHADOW   pShadow;
-		int       triggerLoc;
+		int       triggerLoc = 0;
 
 		/* cache commonly used variables */
 		fromDpy = pDpyInfo->fromDpy;
@@ -963,14 +964,17 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 
 		int       toScreenNum;
 		PSHADOW   pShadow;
-		int       toX, fromX, deltaX;
-		int       toY, fromY, deltaY;
+		int       toX = 0;
+		int       toY = 0;
+		int       fromX, deltaX;
+		int       fromY, deltaY;
 		Display   *fromDpy;
 		Bool      bAbortedDisconnect;
 
 		/* find the screen */
 		toScreenNum = pDpyInfo->toScreen;
 		fromX = pEv->x_root;
+		fromY = pEv->y_root;
 
 		/* check to make sure the cursor is still on the from screen */
 		if ((doEdge == EDGE_WEST) || (doEdge == EDGE_EAST)) {
