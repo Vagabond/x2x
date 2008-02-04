@@ -137,7 +137,7 @@ typedef struct _fakestr {
 #define FAKE_KEY    0
 #define FAKE_BUTTON 1
 
-#define N_BUTTONS   5
+#define N_BUTTONS   20
 
 #define GETDPYXTRA(DPY,PDPYINFO)\
 		(((DPY) == (PDPYINFO)->fromDpy) ?\

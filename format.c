@@ -199,7 +199,7 @@ static void formatMeasureText(tfont, nformats, formatv, pwidth, pheight)
 {
 		int           fontheight, fontwidth;
 		int           width, height;
-		int           len;
+		/*int           len;*/
 		int           format;
 		unsigned      minchar, maxchar;
 		unsigned char *buffer, thechar;
@@ -216,7 +216,7 @@ static void formatMeasureText(tfont, nformats, formatv, pwidth, pheight)
 								break;
 						case FormatString: case FormatStringCenter: case FormatMultiLine:
 								for (buffer = (unsigned char *)formatv[++format];
-												thechar = *buffer;
+												(thechar = *buffer);
 												buffer++) {
 										if ((thechar != '\n') && (thechar != '\t') &&
 														(minchar <= thechar) && (thechar <= maxchar)) {
