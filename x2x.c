@@ -634,7 +634,7 @@ static void InitDpyInfo(PDPYINFO pDpyInfo)
 						triggerLoc = fromHeight - triggerw;
 						toHeight = 0;
 						toWidth  = XWidthOfScreen(XScreenOfDisplay(toDpy, nScreens - 1));
-						pDpyInfo->fromYConn = triggerw;
+						pDpyInfo->fromYConn = 1;
 						pDpyInfo->fromYDisc = fromHeight - triggerw - 1;
 				} /* END if doEdge == ... */
 
@@ -746,7 +746,11 @@ static void InitDpyInfo(PDPYINFO pDpyInfo)
 		free(windowName);
 
 		/* conversion stuff */
-		pDpyInfo->toScreen = (doEdge == EDGE_WEST) ? (nScreens - 1) : 0;
+		if ((doEdge == EDGE_WEST) || (doEdge == EDGE_EAST)) {
+			pDpyInfo->toScreen = (doEdge == EDGE_WEST) ? (nScreens - 1) : 0;
+		} else if ((doEdge == EDGE_NORTH) || (doEdge == EDGE_SOUTH)) {
+			pDpyInfo->toScreen = (doEdge == EDGE_NORTH) ? (nScreens - 1) : 0;
+		}
 
 		/* construct table lookup for screen coordinate conversion */
 		pDpyInfo->xTables = (short **)malloc(sizeof(short *) * nScreens);
