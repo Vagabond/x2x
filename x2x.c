@@ -978,6 +978,9 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 
 		/* check to make sure the cursor is still on the from screen */
 		if ((doEdge == EDGE_WEST) || (doEdge == EDGE_EAST)) {
+				#ifdef DEBUG
+				printf("In ProcessMotionNotify(), WEST/EAST\n");
+				#endif
 				if (!(pEv->same_screen)) {
 						toX = (pDpyInfo->lastFromX < fromX) ? COORD_DECR : COORD_INCR;
 				} else {
@@ -1041,6 +1044,9 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 				} /* END for */
 
 		} else if ((doEdge == EDGE_NORTH) || (doEdge == EDGE_SOUTH)) {
+				#ifdef DEBUG
+				printf("In ProcessMotionNotify(), NORTH/SOUTH\n");
+				#endif
 				if (!(pEv->same_screen)) {
 						toY = (pDpyInfo->lastFromY < fromY) ? COORD_DECR : COORD_INCR;
 				} else {
@@ -1059,7 +1065,7 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 								if (toScreenNum != (pDpyInfo->nScreens - 1)) { /* next screen */
 										toScreenNum = ++(pDpyInfo->toScreen);
 										fromY = pDpyInfo->fromYIncr;
-										toY = pDpyInfo->xTables[toScreenNum][fromY];
+										toY = pDpyInfo->yTables[toScreenNum][fromY];
 								} else { /* disconnect! */
 										if (doBtnBlock &&
 														(pEv->state & (Button1Mask | Button2Mask | Button3Mask |
@@ -1069,13 +1075,13 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 												DoDisconnect(pDpyInfo);
 												fromY = pDpyInfo->fromYDisc;
 										}
-										toY = pDpyInfo->xTables[toScreenNum][pDpyInfo->fromYConn];
+										toY = pDpyInfo->yTables[toScreenNum][pDpyInfo->fromYConn];
 								}
 						} else { /* DECR */
 								if (toScreenNum != 0) { /* previous screen */
 										toScreenNum = --(pDpyInfo->toScreen);
 										fromY = pDpyInfo->fromYDecr;
-										toY = pDpyInfo->xTables[toScreenNum][fromY];
+										toY = pDpyInfo->yTables[toScreenNum][fromY];
 								} else { /* disconnect! */
 										if (doBtnBlock &&
 														(pEv->state & (Button1Mask | Button2Mask | Button3Mask |
@@ -1085,21 +1091,21 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 												DoDisconnect(pDpyInfo);
 												fromY = pDpyInfo->fromYDisc;
 										}
-										toY = pDpyInfo->xTables[toScreenNum][pDpyInfo->fromYConn];
+										toY = pDpyInfo->yTables[toScreenNum][pDpyInfo->fromYConn];
 								}
 						} /* END if toY */
 						if (!bAbortedDisconnect) {
 								fromDpy = pDpyInfo->fromDpy;
 								XWarpPointer(fromDpy, None, pDpyInfo->root, 0, 0, 0, 0, 
-												fromX, pEv->y_root);
+												pEv->x_root, fromY);
 								XFlush(fromDpy);
 						}
 				} /* END if SPECIAL_COORD */
 				pDpyInfo->lastFromY = fromY;
 
 				for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
-						XTestFakeMotionEvent(pShadow->dpy, toScreenNum, toY,
-										pDpyInfo->yTables[toScreenNum][pEv->y_root], 0);
+						XTestFakeMotionEvent(pShadow->dpy, toScreenNum, fromX, toY, 0);
+										/* pDpyInfo->xTables[toScreenNum][pEv->x_root], toY, 0); */
 						XFlush(pShadow->dpy);
 				} /* END for */
 		}
