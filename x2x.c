@@ -137,7 +137,7 @@ typedef struct _fakestr {
 #define FAKE_KEY    0
 #define FAKE_BUTTON 1
 
-#define N_BUTTONS   20
+#define MAX_BUTTONS 20
 
 #define GETDPYXTRA(DPY,PDPYINFO)\
 		(((DPY) == (PDPYINFO)->fromDpy) ?\
@@ -174,7 +174,8 @@ typedef struct {
 		/* stuff on "to" display */
 		Display *toDpy;
 		Window  selWin;
-		unsigned int inverseMap[N_BUTTONS + 1]; /* inverse of button mapping */
+		unsigned int buttonCount;
+		unsigned int inverseMap[MAX_BUTTONS]; /* inverse of button mapping */
 
 		/* state of connection */
 		int     mode;			/* connection */
@@ -199,7 +200,7 @@ typedef struct {
 
 		/* for recording state of buttons and keys */
 		PFAKE   pFakeThings;
-
+		
 } DPYINFO, *PDPYINFO;
 
 /* shadow displays */
@@ -1158,7 +1159,7 @@ static Bool ProcessButtonPress(Display *dpy, PDPYINFO pDpyInfo, XButtonEvent *pE
 #endif
 						break;
 				case X2X_CONNECTED:
-						if (pEv->button <= N_BUTTONS) {
+						if (pEv->button <= pDpyInfo->buttonCount) {
 								toButton = pDpyInfo->inverseMap[pEv->button];
 						} else {
 								/* TODO: actually handle this */
@@ -1211,7 +1212,7 @@ static Bool ProcessButtonRelease(Display *dpy, PDPYINFO pDpyInfo, XButtonEvent *
 
 		if ((pDpyInfo->mode == X2X_CONNECTED) || 
 						(pDpyInfo->mode == X2X_CONN_RELEASE)) {
-				if (pEv->button <= N_BUTTONS) {
+				if (pEv->button <= pDpyInfo->buttonCount) {
 						toButton = pDpyInfo->inverseMap[pEv->button];
 				} else {
 						/* TODO: actually handle this */
@@ -1608,23 +1609,23 @@ static void FakeThingsUp(PDPYINFO pDpyInfo)
 static void RefreshPointerMapping(Display *dpy, PDPYINFO pDpyInfo)
 {
 		unsigned int buttCtr;
-		unsigned char buttonMap[N_BUTTONS];
-		int nButtons;
+		unsigned char buttonMap[MAX_BUTTONS];
 
 		if (dpy == pDpyInfo->toDpy) { /* only care about toDpy */
 				/* straightforward mapping */
-				for (buttCtr = 1; buttCtr <= N_BUTTONS; ++buttCtr) {
+				for (buttCtr = 0; buttCtr <= MAX_BUTTONS; ++buttCtr) {
 						pDpyInfo->inverseMap[buttCtr] = buttCtr;
 				} /* END for */
 
 				if (doPointerMap) {
-						nButtons = MIN(N_BUTTONS, XGetPointerMapping(dpy, buttonMap, N_BUTTONS));
-						for (buttCtr = 0; buttCtr < nButtons; ++buttCtr) {
+						pDpyInfo->buttonCount = XGetPointerMapping(dpy, buttonMap, MAX_BUTTONS);
+
+						printf("number of buttons: %d\n", pDpyInfo->buttonCount);
+						for (buttCtr = 0; buttCtr < pDpyInfo->buttonCount; ++buttCtr) {
 #ifdef DEBUG
 								printf("button %d -> %d\n", buttCtr + 1, buttonMap[buttCtr]);
 #endif
-								if (buttonMap[buttCtr] <= N_BUTTONS)
-										pDpyInfo->inverseMap[buttonMap[buttCtr]] = buttCtr + 1;
+								pDpyInfo->inverseMap[buttonMap[buttCtr]] = buttCtr + 1;
 						} /* END for */
 				} /* END if */
 		} /* END if toDpy */
