@@ -1139,9 +1139,13 @@ static Bool ProcessEnterNotify(Display *dpy, PDPYINFO pDpyInfo, XCrossingEvent *
 		if ((pEv->mode == NotifyNormal) &&
 						(pDpyInfo->mode == X2X_DISCONNECTED) && (dpy == pDpyInfo->fromDpy)) {
 				DoConnect(pDpyInfo);
-				XWarpPointer(fromDpy, None, pDpyInfo->root, 0, 0, 0, 0, 
-								pDpyInfo->fromXConn, pDpyInfo->fromYConn);
-/*								pDpyInfo->fromXConn, pEv->y_root); */
+				if ((doEdge == EDGE_EAST) || (doEdge == EDGE_WEST)) {
+					XWarpPointer(fromDpy, None, pDpyInfo->root, 0, 0, 0, 0, 
+							pDpyInfo->fromXConn, pEv->y_root); 
+				} else if ((doEdge == EDGE_NORTH) || (doEdge == EDGE_SOUTH)) {
+					XWarpPointer(fromDpy, None, pDpyInfo->root, 0, 0, 0, 0, 
+							pEv->x_root, pDpyInfo->fromYConn);
+				}
 				xmev.x_root = pDpyInfo->lastFromX = pDpyInfo->fromXConn;
 				xmev.y_root = pDpyInfo->lastFromY = pDpyInfo->fromYConn;
 				/* xmev.y_root = pEv->y_root; */
