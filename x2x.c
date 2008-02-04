@@ -611,9 +611,9 @@ static void InitDpyInfo(PDPYINFO pDpyInfo)
 				if (doEdge == EDGE_EAST) {
 						/* trigger window location */
 						triggerLoc = fromWidth - triggerw;
-						toHeight = XHeightOfScreen(XScreenOfDisplay(toDpy, 0));
+						toHeight = XHeightOfScreen(XScreenOfDisplay(toDpy, nScreens - 1));
 						toWidth = 0;
-						pDpyInfo->fromXConn = 1;
+						pDpyInfo->fromXConn = triggerw;
 						pDpyInfo->fromXDisc = fromWidth - triggerw - 1;
 				} else if (doEdge == EDGE_WEST) {
 						/* trigger window location */
@@ -1097,12 +1097,13 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 												fromY = pDpyInfo->fromYDisc;
 										}
 										toY = pDpyInfo->yTables[toScreenNum][pDpyInfo->fromYConn];
+										toX = pDpyInfo->xTables[toScreenNum][pDpyInfo->fromXConn];
 								}
 						} /* END if toY */
 						if (!bAbortedDisconnect) {
 								fromDpy = pDpyInfo->fromDpy;
 								XWarpPointer(fromDpy, None, pDpyInfo->root, 0, 0, 0, 0, 
-												pEv->x_root, fromY);
+												toX, toY);
 								XFlush(fromDpy);
 						}
 				} /* END if SPECIAL_COORD */
@@ -1139,9 +1140,11 @@ static Bool ProcessEnterNotify(Display *dpy, PDPYINFO pDpyInfo, XCrossingEvent *
 						(pDpyInfo->mode == X2X_DISCONNECTED) && (dpy == pDpyInfo->fromDpy)) {
 				DoConnect(pDpyInfo);
 				XWarpPointer(fromDpy, None, pDpyInfo->root, 0, 0, 0, 0, 
-								pDpyInfo->fromXConn, pEv->y_root);
+								pDpyInfo->fromXConn, pDpyInfo->fromYConn);
+/*								pDpyInfo->fromXConn, pEv->y_root); */
 				xmev.x_root = pDpyInfo->lastFromX = pDpyInfo->fromXConn;
-				xmev.y_root = pEv->y_root;
+				xmev.y_root = pDpyInfo->lastFromY = pDpyInfo->fromYConn;
+				/* xmev.y_root = pEv->y_root; */
 				xmev.same_screen = True;
 				ProcessMotionNotify(NULL, pDpyInfo, &xmev);
 		}  /* END if NotifyNormal... */
@@ -1258,7 +1261,8 @@ static Bool ProcessButtonRelease(Display *dpy, PDPYINFO pDpyInfo, XButtonEvent *
 						if (pDpyInfo->mode == X2X_AWAIT_RELEASE) { /* connect */
 								DoConnect(pDpyInfo);
 								xmev.x_root = pDpyInfo->lastFromX = pEv->x_root;
-								xmev.y_root = pEv->y_root;
+								xmev.y_root = pDpyInfo->lastFromY = pEv->y_root;
+								/* xmev.y_root = pEv->y_root; */
 								xmev.same_screen = True;
 								ProcessMotionNotify(NULL, pDpyInfo, &xmev);
 						} else { /* disconnect */
