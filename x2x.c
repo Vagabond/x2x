@@ -1621,7 +1621,7 @@ static void RefreshPointerMapping(Display *dpy, PDPYINFO pDpyInfo)
 
 		if (dpy == pDpyInfo->toDpy) { /* only care about toDpy */
 				/* straightforward mapping */
-				for (buttCtr = 0; buttCtr <= MAX_BUTTONS; ++buttCtr) {
+				for (buttCtr = 0; buttCtr < MAX_BUTTONS; buttCtr++) {
 						pDpyInfo->inverseMap[buttCtr] = buttCtr;
 				} /* END for */
 
@@ -1630,10 +1630,20 @@ static void RefreshPointerMapping(Display *dpy, PDPYINFO pDpyInfo)
 
 						printf("number of buttons: %d\n", pDpyInfo->buttonCount);
 						for (buttCtr = 0; buttCtr < pDpyInfo->buttonCount; ++buttCtr) {
+								/* check if button is out of range on remote side */
+								if (buttonMap[buttCtr] > pDpyInfo->buttonCount) {
+									pDpyInfo->inverseMap[buttCtr +1] = buttCtr + 1;
+									printf("Warning: display %s has out of index pointer mapping: %d -> %d\n",
+											toDpyName, buttCtr+1, buttonMap[buttCtr]);
 #ifdef DEBUG
-								printf("button %d -> %d\n", buttCtr + 1, buttonMap[buttCtr]);
+									printf("button %d -> %d\n", buttCtr + 1, buttCtr+1);
 #endif
-								pDpyInfo->inverseMap[buttonMap[buttCtr]] = buttCtr + 1;
+								} else {
+									pDpyInfo->inverseMap[buttonMap[buttCtr]] = buttCtr + 1; 
+#ifdef DEBUG
+									printf("button %d -> %d\n", buttCtr + 1, buttonMap[buttCtr]);
+#endif
+								}
 						} /* END for */
 				} /* END if */
 		} /* END if toDpy */
