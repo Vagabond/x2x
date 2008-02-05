@@ -1643,7 +1643,9 @@ static void RefreshPointerMapping(Display *dpy, PDPYINFO pDpyInfo)
 				if (doPointerMap) {
 						pDpyInfo->buttonCount = XGetPointerMapping(dpy, buttonMap, MAX_BUTTONS);
 
+#ifdef DEBUG
 						printf("number of buttons: %d\n", pDpyInfo->buttonCount);
+#endif
 						for (buttCtr = 0; buttCtr < pDpyInfo->buttonCount; ++buttCtr) {
 								/* check if button is out of range on remote side */
 								if (buttonMap[buttCtr] > pDpyInfo->buttonCount) {
