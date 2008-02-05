@@ -787,6 +787,15 @@ static void InitDpyInfo(PDPYINFO pDpyInfo)
 						xTable[fromWidth - 2] = COORD_INCR;
 				}
 
+				if ((screenNum != 0) || (doEdge == EDGE_SOUTH))
+						yTable[0] = COORD_DECR;
+				if (((screenNum + 1) < nScreens) || (doEdge == EDGE_NORTH)) {
+						yTable[fromHeight - 1] = COORD_INCR;
+						/* work-around for bug: on at least one tested screen, cursor
+						   never moved past fromWidth - 2 */
+						yTable[fromHeight - 2] = COORD_INCR;
+				}
+
 		} /* END for screenNum */
 
 		free(heights);
@@ -995,8 +1004,9 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 				deltaX = pDpyInfo->lastFromX - fromX;
 				if (deltaX < 0)
 						deltaX = -deltaX;
-				if (deltaX > pDpyInfo->unreasonableDelta)
+				if (deltaX > pDpyInfo->unreasonableDelta) {
 						return False;
+				}
 
 				if (SPECIAL_COORD(toX) != 0) { /* special coordinate */
 						bAbortedDisconnect = False;
@@ -1061,8 +1071,9 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 				deltaY = pDpyInfo->lastFromY - fromY;
 				if (deltaY < 0)
 						deltaY = -deltaY;
-				if (deltaY > pDpyInfo->unreasonableDelta)
+				if (deltaY > pDpyInfo->unreasonableDelta) {
 						return False;
+				}
 
 				if (SPECIAL_COORD(toY) != 0) { /* special coordinate */
 						bAbortedDisconnect = False;
@@ -1103,7 +1114,7 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 						if (!bAbortedDisconnect) {
 								fromDpy = pDpyInfo->fromDpy;
 								XWarpPointer(fromDpy, None, pDpyInfo->root, 0, 0, 0, 0, 
-												toX, toY);
+												pEv->x_root, fromY);
 								XFlush(fromDpy);
 						}
 				} /* END if SPECIAL_COORD */
