@@ -1061,8 +1061,7 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 				pDpyInfo->lastFromX = fromX;
 
 				for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
-						XTestFakeMotionEvent(pShadow->dpy, toScreenNum, toX,
-										pDpyInfo->yTables[toScreenNum][pEv->y_root], 0);
+						XTestFakeMotionEvent(pShadow->dpy, toScreenNum, toX, fromY, 0);
 						XFlush(pShadow->dpy);
 				} /* END for */
 
