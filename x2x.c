@@ -53,6 +53,11 @@
 
 /*#define DEBUG*/
 
+/* Hack for solaris 2008/12/15 ADT */
+#ifdef __stderrp
+#define __stderrp stderr
+#endif
+
 /**********
  * definitions for edge
  **********/
@@ -255,7 +260,10 @@ int main(int argc, char **argv)
 		fromDpyName = XDisplayName(fromDpyName);
 		toDpyName   = XDisplayName(toDpyName);
 		if (!strcasecmp(toDpyName, fromDpyName)) {
-				fprintf(stderr, "%s: display names are both %s\n", programStr, toDpyName);
+				if (strlen(toDpyName))
+					fprintf(stderr, "%s: display names are both %s\n", programStr, toDpyName);
+				else
+					fprintf(stderr, "%s: display names are both empty\n", programStr);
 				exit(1);
 		}
 
