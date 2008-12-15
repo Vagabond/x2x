@@ -771,6 +771,9 @@ static void InitDpyInfo(PDPYINFO pDpyInfo)
 						XWidthOfScreen(XScreenOfDisplay(toDpy, screenNum));
 				heights[screenNum] = toHeight = 
 						XHeightOfScreen(XScreenOfDisplay(toDpy, screenNum));
+#ifdef DEBUG
+				printf("Target screen dimensions: %dx%d\n", toWidth, toHeight);
+#endif
 
 				pDpyInfo->xTables[screenNum] = xTable =
 						(short *)malloc(sizeof(short) * fromWidth);
@@ -1061,8 +1064,14 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 				pDpyInfo->lastFromX = fromX;
 
 				for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
-						XTestFakeMotionEvent(pShadow->dpy, toScreenNum, toX, fromY, 0);
+					if (pEv->y_root <= XHeightOfScreen(XScreenOfDisplay(pDpyInfo->toDpy, toScreenNum))) {
+						XTestFakeMotionEvent(pShadow->dpy, toScreenNum, toX, pDpyInfo->yTables[toScreenNum][pEv->y_root], 0);
 						XFlush(pShadow->dpy);
+					} else {
+#ifdef DEBUG
+						printf("bullshit Y coordinate: %d\n", pEv->y_root);
+#endif
+					}
 				} /* END for */
 
 		} else if ((doEdge == EDGE_NORTH) || (doEdge == EDGE_SOUTH)) {
@@ -1115,7 +1124,6 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 												fromY = pDpyInfo->fromYDisc;
 										}
 										toY = pDpyInfo->yTables[toScreenNum][pDpyInfo->fromYConn];
-										toX = pDpyInfo->xTables[toScreenNum][pDpyInfo->fromXConn];
 								}
 						} /* END if toY */
 						if (!bAbortedDisconnect) {
@@ -1128,9 +1136,14 @@ static Bool ProcessMotionNotify(Display *unused, PDPYINFO pDpyInfo, XMotionEvent
 				pDpyInfo->lastFromY = fromY;
 
 				for (pShadow = shadows; pShadow; pShadow = pShadow->pNext) {
-						XTestFakeMotionEvent(pShadow->dpy, toScreenNum, fromX, toY, 0);
-										/* pDpyInfo->xTables[toScreenNum][pEv->x_root], toY, 0); */
-						XFlush(pShadow->dpy);
+						if (pEv->x_root <= XWidthOfScreen(XScreenOfDisplay(pDpyInfo->toDpy, toScreenNum))) {
+							XTestFakeMotionEvent(pShadow->dpy, toScreenNum, pDpyInfo->xTables[toScreenNum][pEv->x_root], toY, 0);
+							XFlush(pShadow->dpy);
+						} else {
+#ifdef DEBUG
+							printf("bullshit X coordinate: %d\n", pEv->x_root);
+#endif
+						}
 				} /* END for */
 		}
 
