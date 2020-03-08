@@ -5,7 +5,7 @@ DEPS = format.h
 OBJ = lawyerese.o format.o x2x.o 
 
 %.o: %.c $(DEPS)
-		$(CC) -c -o $@ $< $(CFLAGS)
+		$(CC) -c -fPIE -o $@ $< $(CFLAGS)
 
 x2x: $(OBJ)
 		gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)

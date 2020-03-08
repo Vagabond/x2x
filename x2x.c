@@ -46,6 +46,7 @@
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <X11/Xatom.h> /* for selection */
+#include <X11/XKBlib.h> /* XkbKeycodeToKeysym */
 #include <sys/types.h> /* for select */
 #include <sys/time.h> /* for select */
 #include <unistd.h> /* for sleep() */
@@ -1317,7 +1318,7 @@ static Bool ProcessKeyEvent(Display *dpy, PDPYINFO pDpyInfo, XKeyEvent *pEv)
 		Bool      bPress;
 		PSTICKY   pSticky;
 
-		keysym = XKeycodeToKeysym(pDpyInfo->fromDpy, pEv->keycode, 0);
+		keysym = XkbKeycodeToKeysym(pDpyInfo->fromDpy, 0, pEv->keycode, 0);
 		bPress = (pEv->type == KeyPress);
 
 		for (pSticky = stickies; pSticky; pSticky = pSticky->pNext)
